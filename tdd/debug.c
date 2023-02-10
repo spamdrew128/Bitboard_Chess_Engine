@@ -215,12 +215,15 @@ bool CompareInfo(BoardInfo_t* info, BoardInfo_t* expectedInfo) {
     return success;
 }
 
+bool CompareCastlingRights(CastleRights_t cr1, CastleRights_t cr2) {
+    return cr1.data == cr2.data;
+}
+
 bool CompareState(GameState_t* expectedState, GameStack_t* stack) {
     return
         (ReadHalfmoveClock(stack) == expectedState->halfmoveClock) &&
         (ReadEnPassantSquares(stack) == expectedState->enPassantSquares) &&
-        (ReadCastleSquares(stack, white) == expectedState->castleSquares[white]) &&
-        (ReadCastleSquares(stack, black) == expectedState->castleSquares[black]) &&
+        CompareCastlingRights(ReadCastleRights(stack), expectedState->castleRights) &&
         (ReadCapturedPiece(stack) == expectedState->capturedPiece);
 }
 
