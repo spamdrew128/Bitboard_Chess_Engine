@@ -266,7 +266,9 @@ static EvalScore_t Negamax(
     }
 
     TTFlag_t flag = DetermineTTFlag(bestScore, oldAlpha, alpha, beta);
-    StoreTTEntry(searchInfo->tt, ttIndex, flag, depth, ply, bestMove, bestScore, hash);
+    if(ShouldReplace(searchInfo->tt, entry, depth, flag)) {
+        StoreTTEntry(searchInfo->tt, ttIndex, flag, depth, ply, bestMove, bestScore, hash);
+    }
 
     return bestScore;
 }
@@ -328,6 +330,10 @@ static void PrintUciInformation(
     SendPvInfo(&searchInfo.pvTable, currentDepth);
 }
 
+static void SearchCompleteActions(UciSearchInfo_t* uciSearchInfo) {
+    AgeTranspositionTable(&uciSearchInfo->tt);
+}
+
 SearchResults_t Search(
     UciSearchInfo_t* uciSearchInfo,
     BoardInfo_t* boardInfo,
@@ -370,6 +376,8 @@ SearchResults_t Search(
 
     } while(!searchInfo.outOfTime && currentDepth != uciSearchInfo->depthLimit && currentDepth < DEPTH_MAX);
 
+    SearchCompleteActions(uciSearchInfo);
+
     return searchResults;
 }
 
@@ -400,6 +408,8 @@ NodeCount_t BenchSearch(
             0
         );
     } while(currentDepth != uciSearchInfo->depthLimit && currentDepth < DEPTH_MAX);
+
+    SearchCompleteActions(uciSearchInfo);
 
     return searchInfo.nodeCount;
 }
